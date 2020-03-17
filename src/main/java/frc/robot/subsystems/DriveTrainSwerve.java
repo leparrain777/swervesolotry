@@ -264,7 +264,7 @@ public double[][] added()
 
 public void drivebyjoystick()
 {
-  
+  double[][] added = this.added();
 }
 
 // public void neutralBrake() {
