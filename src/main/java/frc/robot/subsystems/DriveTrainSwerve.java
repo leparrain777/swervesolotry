@@ -121,7 +121,6 @@ public double gyrodir()
 
 public double[][] rotmatrix()
 {
-  //no longer needed
   double gyrodirconst = this.gyrodir();
   double[][] rotmatrix = {{Math.cos(gyrodirconst),-Math.sin(gyrodirconst)},{Math.sin(gyrodirconst),Math.cos(gyrodirconst)}};
   return rotmatrix;
@@ -250,21 +249,41 @@ public double[][] rottovectors()
 
 public double[][] added()
 {
-  double gyrodirconst = this.gyrodir();
   double maxduetovel = this.maxduetovel();
-  double[] duetovel = {Math.cos(gyrodirconst)*maxduetovel,Math.sin(gyrodirconst)*maxduetovel};
   double[][] rottovectors = this.rottovectors();
   double[][] holder = rottovectors;
   for(int i=0;i<rottovectors.length;i++)
   {
-    holder[i] = new double[] {rottovectors[i][0]+duetovel[0],rottovectors[i][1]+duetovel[1]};
+    holder[i] = new double[] {rottovectors[i][0]+maxduetovel,rottovectors[i][1]};
   }
+  return holder;
+}
+
+public double[][] wheelheadings()
+{
+  double[][] rotmatrix = this.rotmatrix();
+  double[][] added = this.added();
+  // alright, I am gonna hardcode this section, but what I am hardcoding is just the dot product aka matrix multiplication of [rotmatrix] . Transpose([added]) transposed again.
+  // I couldn't find a library that I was happy with using.
+  double a = rotmatrix[0][0];
+  double b = rotmatrix[0][1];
+  double c = rotmatrix[1][0];
+  double d = rotmatrix[1][1];
+  double e = added[0][0];
+  double f = added[0][1];
+  double g = added[1][0];
+  double h = added[1][1];
+  double i = added[2][0];
+  double j = added[2][1]; //lol skipped k, not gonna redo it though.
+  double l = added[3][0];
+  double m = added[3][1];
+  double[][] holder = {{a*e+b*f,c*e+d*f},{a*g+b*h,c*g+d*h},{a*i+j*j,c*i+d*j},{a*l+b*m,c*l+d*m}};
   return holder;
 }
 
 public void drivebyjoystick()
 {
-  double[][] added = this.added();
+  double[][] wheelheadings = this.wheelheadings();
 }
 
 // public void neutralBrake() {
