@@ -48,6 +48,9 @@ public class RobotContainer {
     // Configure the button bindings
     configureButtonBindings();
   }
+  public double getGyroAngle(){
+    return m_gyro.getAngle();
+  }
 
   /**
    * Use this method to define your button->command mappings.  Buttons can be created by

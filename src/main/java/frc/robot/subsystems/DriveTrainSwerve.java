@@ -25,6 +25,7 @@ import edu.wpi.first.wpilibj.SpeedController;
 
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.RobotContainer;
 import frc.robot.Constants;
 ///////////////////////////////////////////////////////////////////////////////////////////////
 public class DriveTrainSwerve extends SubsystemBase {
@@ -79,6 +80,8 @@ public class DriveTrainSwerve extends SubsystemBase {
   m_steerEncoderLB = new AnalogInput(Constants.CANID_steerEncoderLB);
   m_steerEncoderRF = new AnalogInput(Constants.CANID_steerEncoderRF);
   m_steerEncoderRB = new AnalogInput(Constants.CANID_steerEncoderRB);
+
+
   }
 ///////////////////////////////////////////////////////////////////////////////////////////////
 //public double euclid(double x, double y){return Math.sqrt(Math.pow(x,2)+Math.pow(y,2));} //this is just Math.hypot(x,y)
@@ -107,12 +110,13 @@ public double[] getspeeds()
 
 public double gyrozero()
 {
-  return Math.PI*0;//TODO get gyro zero angle, this is our adjustment term.
+  return Math.PI*0; //TODO get gyro zero angle, this is our adjustment term.
 }
 
 public double gyroang()
 {
-  return Math.PI/2;//TODO get gyro angle in radians counterclockwise from zero
+  return Math.PI/2; //TODO get gyro angle in radians counterclockwise from zero
+  //m_robotContainer.getGyroAngle(); ???
 }
 
 public double gyrodir()
