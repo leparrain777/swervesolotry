@@ -62,6 +62,10 @@ public class DriveTrainSwerve extends SubsystemBase {
   private final double[] wheeldistancesdefault = wheeldistancesdefault();
   public boolean defaultpointofrotation=true;
   private ADIS16470_IMU gyro;
+  public double leftYAxis;
+  public double leftXAxis;
+  public double rightXAxis;
+  
   
 ///////////////////////////////////////////////////////////////////////////////////////////////
   public DriveTrainSwerve(ADIS16470_IMU gyroname) {
@@ -92,7 +96,7 @@ public class DriveTrainSwerve extends SubsystemBase {
 ///////////////////////////////////////////////////////////////////////////////////////////////
 //public double euclid(double x, double y){return Math.sqrt(Math.pow(x,2)+Math.pow(y,2));} //this is just Math.hypot(x,y)
 
-public double[] getdirections()
+public double[] getdirections() // Currently unused
 {
   double dirLF=0; //get these from hardware somehow
   double dirLB=0;
@@ -102,7 +106,7 @@ public double[] getdirections()
   return dirs;
 }
 
-public double[] getspeeds()
+public double[] getspeeds() // Currently unused
 {
   double rpsLF=10; //get these from hardware somehow
   double rpsLB=10;
@@ -151,8 +155,8 @@ public double safety()
 
 public double[] joy2vecxy()
 {
-  double x = .5;//get joystick x value
-  double y = .5;//get joystick y value
+  double x = this.leftXAxis;//get joystick x value
+  double y = this.leftYAxis;//get joystick y value
   double deadbandxy = Constants.deadbandxy;
   if(Math.hypot(x, y)<deadbandxy){return new double[] {0,0};}
   else {return new double[] {this.safety()*x,this.safety()*y};}
@@ -160,7 +164,7 @@ public double[] joy2vecxy()
 
 public double joy2vecz()
 {
-  double z = .5;//get joystick z value
+  double z = this.rightXAxis;//get joystick z value
   double deadbandz = Constants.deadbandz;
   if(z<deadbandz) {return 0.0;}
   else {return Math.copySign(Math.pow(Math.abs(this.safety()*z),1.5),z);}

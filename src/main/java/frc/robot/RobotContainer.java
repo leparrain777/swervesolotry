@@ -12,6 +12,7 @@ import com.analog.adis16470.frc.ADIS16470_IMU;
 
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.GenericHID.Hand;
 import frc.robot.commands.ExampleCommand;
 import frc.robot.commands.Swervedrive;
 import frc.robot.subsystems.DriveTrainSwerve;
@@ -34,6 +35,7 @@ public class RobotContainer {
   private Swervedrive m_swervecommand = new Swervedrive(m_DriveTrainSwerve);
 
   private ADIS16470_IMU m_gyro;
+  public static XboxController driveController = new XboxController(Constants.USB_driveController);
 
   
   /**
@@ -52,6 +54,17 @@ public class RobotContainer {
   }
   public double getGyroAngle(){
     return m_gyro.getAngle();
+  }
+  public static double getDriveRightXAxis() {
+    return driveController.getX(Hand.kRight);
+  }
+
+  public static double getDriveLeftYAxis() {
+    return driveController.getY(Hand.kLeft);
+  }
+
+  public static double getDriveLeftXAxis() {
+    return driveController.getX(Hand.kLeft);
   }
 
   /**

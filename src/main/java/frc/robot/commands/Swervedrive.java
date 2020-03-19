@@ -38,6 +38,12 @@ public class Swervedrive extends CommandBase {
   @Override
   public void execute() 
   {
+    double leftYAxis = RobotContainer.getDriveLeftYAxis();
+    double leftXAxis = RobotContainer.getDriveLeftXAxis();
+    double rightXAxis = RobotContainer.getDriveRightXAxis();
+    m_DriveTrainSwerve.leftYAxis = leftYAxis;
+    m_DriveTrainSwerve.leftXAxis = leftXAxis;
+    m_DriveTrainSwerve.rightXAxis = rightXAxis;
     m_DriveTrainSwerve.drivebyjoystick();
   }
 

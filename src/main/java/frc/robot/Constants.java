@@ -32,8 +32,9 @@ public final class Constants {
 	public static final int CANID_steerEncoderRB = 0;
 	public static final double safetyoff = 1;
 	public static final double safetyon = .5;
-	public static final double deadbandxy = .05;
-	public static final double deadbandz = 0;
+	public static final double deadbandxy = 0.05;
+	public static final double deadbandz = 0.05;
+	public static final int USB_driveController = 0;
 
 	// public static final String MOTOR_LEFT_1_ID = null;
 	// public static final int CANID_driveLF = 0;
