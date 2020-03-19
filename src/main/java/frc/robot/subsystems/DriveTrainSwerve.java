@@ -21,6 +21,8 @@ import org.ejml.simple.SimpleMatrix;
 import edu.wpi.first.wpiutil.math.Matrix;
 
 import edu.wpi.first.wpilibj.AnalogInput;
+import edu.wpi.first.wpilibj.SpeedController;
+
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -50,7 +52,7 @@ public class DriveTrainSwerve extends SubsystemBase {
   private final double wheeldiam = 6.0; // in inches
   private final double wheelcirc = Math.PI * wheeldiam / 12; //in feet
   private final double[] gearing = {1,1,1,1}; // probably like .1 or something small
-  private final double wheelmaxvel = 15.0; // maximum velocity of a single wheel in feet per second. Needs to be empiracally tested, big tuning factor.
+  private final double wheelmaxvel = 15.0; // maximum velocity of a single wheel in feet per second. Needs to be empiracally tested, big tuning factor. UPDATE: might just bypass this and do power manipulation instead.
   private final double[][] wheelplacementsdefault = {{-11,11},{-11,-11},{11,11},{11,-11}};
   private final double[][] unitcrossdefault = unitcrossdefault();
   private final double[] wheeldistancesdefault = wheeldistancesdefault();
@@ -284,6 +286,27 @@ public double[][] wheelheadings()
 public void drivebyjoystick()
 {
   double[][] wheelheadings = this.wheelheadings();
+  swervemodule(wheelheadings[0], m_driveMotorLF, m_steerMotorLF, m_steerEncoderLF);
+  swervemodule(wheelheadings[1], m_driveMotorLB, m_steerMotorLB, m_steerEncoderLB);
+  swervemodule(wheelheadings[2], m_driveMotorRF, m_steerMotorRF, m_steerEncoderRF);
+  swervemodule(wheelheadings[3], m_driveMotorRB, m_steerMotorRB, m_steerEncoderRB);
+}
+
+public void swervemodule(double[] input, WPI_TalonSRX drive, SpeedController steer, AnalogInput encoder)
+{
+  double volt = encoder.getVoltage();
+  double currentangle = volt/5*Math.PI*2; 
+  // Encoders should read 0 when all wheels are facing perfectly right, and should be PI/2 when perfectly foreward. 
+  // If not, we need to make adjustments so their offset from that is taken care of.
+  double magnitude = Math.hypot(input[0], input[1]);
+  double dir = Math.atan2(input[1], input[0]);
+  if (dir<0.0){dir=Math.PI*2 + dir;}
+// a mod b in its true math form is ((a % b) + b) % b in java.
+  double a = dir-currentangle;
+  double b = Math.PI*2;
+  double amodb = ((a % b) + b) % b;
+  if(amodb<=Math.PI/2 || amodb>=Math.PI*3/2 ){steer.set(a/(Math.PI/2));drive.set(magnitude);}
+  if(amodb<Math.PI*3/2 && amodb>Math.PI/2){steer.set((a-Math.PI)/(Math.PI/2));drive.set(-magnitude);}
 }
 
 // public void neutralBrake() {

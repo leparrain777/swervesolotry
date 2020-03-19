@@ -14,6 +14,7 @@ import frc.robot.commands.Swervedrive;
 import frc.robot.subsystems.DriveTrainSwerve;
 import frc.robot.subsystems.ExampleSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
 /**
  * This class is where the bulk of the robot should be declared.  Since Command-based is a
@@ -23,18 +24,20 @@ import edu.wpi.first.wpilibj2.command.Command;
  */
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
-  private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
-  private final DriveTrainSwerve m_DriveTrainSwerve = new DriveTrainSwerve();
+  private ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
+  private DriveTrainSwerve m_DriveTrainSwerve = new DriveTrainSwerve();
 
-  private final ExampleCommand m_autoCommand = new ExampleCommand(m_exampleSubsystem);
-  private final Swervedrive m_swervecommand = new Swervedrive(m_DriveTrainSwerve);
+  private ExampleCommand m_autoCommand = new ExampleCommand(m_exampleSubsystem);
+  private Swervedrive m_swervecommand = new Swervedrive(m_DriveTrainSwerve);
 
-  m_DriveTrainSwerve.setDefaultCommand(m_swervecommand);
-
+  
   /**
    * The container for the robot.  Contains subsystems, OI devices, and commands.
    */
-  public RobotContainer() {
+  public RobotContainer() 
+  {
+    m_DriveTrainSwerve.setDefaultCommand(m_swervecommand);
+
     // Configure the button bindings
     configureButtonBindings();
   }
