@@ -12,6 +12,8 @@ import java.util.Collections;
 import java.util.function.Supplier;
 
 import edu.wpi.first.wpiutil.math.Matrix;
+
+import com.analog.adis16470.frc.ADIS16470_IMU;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
@@ -50,6 +52,7 @@ public class DriveTrainSwerve extends SubsystemBase {
   private final AnalogInput m_steerEncoderRF;
   private final AnalogInput m_steerEncoderRB;
 
+
   private final double wheeldiam = 6.0; // in inches
   private final double wheelcirc = Math.PI * wheeldiam / 12; //in feet
   private final double[] gearing = {1,1,1,1}; // probably like .1 or something small
@@ -58,15 +61,18 @@ public class DriveTrainSwerve extends SubsystemBase {
   private final double[][] unitcrossdefault = unitcrossdefault();
   private final double[] wheeldistancesdefault = wheeldistancesdefault();
   public boolean defaultpointofrotation=true;
+  private ADIS16470_IMU gyro;
   
 ///////////////////////////////////////////////////////////////////////////////////////////////
-  public DriveTrainSwerve() {
+  public DriveTrainSwerve(ADIS16470_IMU gyroname) {
   // Competition Robot motors
   //m_leftFront = new WPI_TalonFX( Constants.CANID_driveLF );
   //m_rightFront = new WPI_TalonFX( Constants.CANID_driveRF );
   //m_leftBack = new WPI_TalonFX( Constants.CANID_driveLB);
   //m_rightBack = new WPI_TalonFX( Constants.CANID_driveRB );
   //neutralCoast();
+  ADIS16470_IMU gyro=gyroname;
+
   m_steerMotorLF = new WPI_VictorSPX(Constants.CANID_steerMotorLF);  
   m_driveMotorLF = new WPI_TalonSRX(Constants.CANID_driveMotorLF);
   m_steerMotorLB = new WPI_VictorSPX(Constants.CANID_steerMotorLB);
@@ -115,7 +121,7 @@ public double gyrozero()
 
 public double gyroang()
 {
-  return Math.PI/2; //TODO get gyro angle in radians counterclockwise from zero
+  return (((-1*this.gyro.getAngle()/360*Math.PI*2)%(Math.PI*2))+Math.PI*2)%(Math.PI*2); //TODO get gyro angle in radians counterclockwise from zero
   //m_robotContainer.getGyroAngle(); ???
 }
 
