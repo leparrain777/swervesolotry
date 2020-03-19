@@ -107,12 +107,12 @@ public double[] getspeeds()
 
 public double gyrozero()
 {
-  return Math.PI*0;//get gyro zero angle, this is our adjustment term.
+  return Math.PI*0;//TODO get gyro zero angle, this is our adjustment term.
 }
 
 public double gyroang()
 {
-  return Math.PI/2;//get gyro angle in radians counterclockwise from
+  return Math.PI/2;//TODO get gyro angle in radians counterclockwise from zero
 }
 
 public double gyrodir()

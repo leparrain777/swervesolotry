@@ -7,6 +7,9 @@
 
 package frc.robot;
 
+import com.analog.adis16470.frc.ADIS16470_IMU;
+
+
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import frc.robot.commands.ExampleCommand;
@@ -30,12 +33,16 @@ public class RobotContainer {
   private ExampleCommand m_autoCommand = new ExampleCommand(m_exampleSubsystem);
   private Swervedrive m_swervecommand = new Swervedrive(m_DriveTrainSwerve);
 
+  private ADIS16470_IMU m_gyro;
+
   
   /**
    * The container for the robot.  Contains subsystems, OI devices, and commands.
    */
   public RobotContainer() 
   {
+    m_gyro = new ADIS16470_IMU();
+    m_gyro.calibrate();
     m_DriveTrainSwerve.setDefaultCommand(m_swervecommand);
 
     // Configure the button bindings
