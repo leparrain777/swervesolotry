@@ -144,7 +144,7 @@ public double[][] rotmatrix()
 
 public double safety()
 {
-  boolean safetyon = false;// get safety mode
+  boolean safetyon = false;// get safety mode toggle status
   double safetyoffval = Constants.safetyoff; 
   double safetyonval = Constants.safetyon;
   double safety;
@@ -166,8 +166,10 @@ public double joy2vecz()
 {
   double z = this.rightXAxis;//get joystick z value
   double deadbandz = Constants.deadbandz;
-  if(z<deadbandz) {return 0.0;}
-  else {return Math.copySign(Math.pow(Math.abs(this.safety()*z),1.5),z);}
+  if(Math.abs(z)<deadbandz) {return 0.0;}
+  else {return Math.copySign(Math.pow(Math.abs(this.safety()*z),1.5),-1*z);}
+  // this takes an arbitrary power of the magnitude of z, and assigns it negative the sign of z such that -z coresponds to rotating counterclockwise, the direction of positive angle.
+  // powers of z^x such that x>=1 have z=0 map to 0 and z=1 map to one, where z is small the function grows slowly and where z is close to 1 it grows faster, so optimizes for precision for small angles.
 }
 
 public double[][] unitcrossdefault()
@@ -281,6 +283,7 @@ public double[][] wheelheadings()
   double[][] added = this.added();
   // alright, I am gonna hardcode this section, but what I am hardcoding is just the dot product aka matrix multiplication of [rotmatrix] . Transpose([added]) transposed again.
   // I couldn't find a library that I was happy with using.
+  // Just think of it as a coordinate system adjustment(rotation in this case) so each vector gets rotated but we only have to do addition and multiplication (in a very specific way) to get the result.
   double a = rotmatrix[0][0];
   double b = rotmatrix[0][1];
   double c = rotmatrix[1][0];
@@ -321,6 +324,8 @@ public void swervemodule(double[] input, WPI_TalonSRX drive, SpeedController ste
   double amodb = ((a % b) + b) % b;
   if(amodb<=Math.PI/2 || amodb>=Math.PI*3/2 ){steer.set(a/(Math.PI/2));drive.set(magnitude);}
   if(amodb<Math.PI*3/2 && amodb>Math.PI/2){steer.set((a-Math.PI)/(Math.PI/2));drive.set(-magnitude);}
+  // If the current angle is less than or equal to 90degrees from the desired angle, steer toward the desired angle proportionally to how far off you are, and set the drive power to be foreward.
+  // If the current angle is between 90 and 180degrees from the desired angle, treat it as if you were the antipode of the current angle and steer toward that proportionally to how far from there you are, and set the drive power to be backward.
 }
 
 // public void neutralBrake() {
