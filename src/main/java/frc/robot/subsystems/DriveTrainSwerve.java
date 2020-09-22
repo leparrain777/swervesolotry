@@ -52,14 +52,15 @@ public class DriveTrainSwerve extends SubsystemBase {
   private final AnalogInput m_steerEncoderRF;
   private final AnalogInput m_steerEncoderRB;
 
-
+  private final double pi = Math.PI;
   private final double wheeldiam = 6.0; // in inches
-  private final double wheelcirc = Math.PI * wheeldiam / 12; //in feet
+  private final double wheelcirc = pi * wheeldiam / 12; //in feet
   private final double[] gearing = {1,1,1,1}; // probably like .1 or something small
   private final double wheelmaxvel = 15.0; // maximum velocity of a single wheel in feet per second. Needs to be empiracally tested, big tuning factor. UPDATE: might just bypass this and do power manipulation instead.
   private final double[][] wheelplacementsdefault = {{-11,11},{-11,-11},{11,11},{11,-11}};
-  private final double[][] unitcrossdefault = unitcrossdefault();
-  private final double[] wheeldistancesdefault = wheeldistancesdefault();
+  private final double[][] wheelplacementsalternate = {{-11,11},{-11,-11},{11,11},{11,-11}};
+  private final double[][] unitcrossdefault = unitcrosscalc();
+  private final double[] wheeldistancesdefault = wheeldistancescalc();
   public boolean defaultpointofrotation=true;
   private ADIS16470_IMU gyro;
   public double leftYAxis;
@@ -75,7 +76,7 @@ public class DriveTrainSwerve extends SubsystemBase {
   //m_leftBack = new WPI_TalonFX( Constants.CANID_driveLB);
   //m_rightBack = new WPI_TalonFX( Constants.CANID_driveRB );
   //neutralCoast();
-  ADIS16470_IMU gyro=gyroname;
+  gyro = gyroname;
 
   m_steerMotorLF = new WPI_VictorSPX(Constants.CANID_steerMotorLF);  
   m_driveMotorLF = new WPI_TalonSRX(Constants.CANID_driveMotorLF);
@@ -118,20 +119,24 @@ public double[] getspeeds() // Currently unused
   return vels;
 }
 
-public double gyrozero()
+public double gyrozero() // Returns an ofset used to make the robots right side and zero degrees coincide
 {
-  return Math.PI*0; //TODO get gyro zero angle, this is our adjustment term.
+  return 0; //If we want, we can make this dynamically adjust on button press, for now this is a constant value
 }
 
-public double gyroang()
+public double mod(double a,double b) // This is the mathematical definition of modulus. Do not touch this.
 {
-  return (((-1*this.gyro.getAngle()/360*Math.PI*2)%(Math.PI*2))+Math.PI*2)%(Math.PI*2); //TODO get gyro angle in radians counterclockwise from zero
-  //m_robotContainer.getGyroAngle(); ???
+  return ((a%b)+b)%b;
 }
 
-public double gyrodir()
+public double gyroang() //get gyro angle in radians counterclockwise from the gyro's internal zero.
 {
-  double gyrodir = (this.gyroang()+this.gyrozero()+2*Math.PI)%(Math.PI*2); // get angle in radians counterclockwise from some set gyro zero 
+  return mod(-1*this.gyro.getAngle()/360*pi*2,pi*2);
+}
+
+public double gyrodir()// get angle in radians counterclockwise from our set gyro zero 
+{
+  double gyrodir = mod(this.gyroang()+this.gyrozero(),2*pi); 
   return gyrodir; 
 }
 
@@ -168,34 +173,34 @@ public double joy2vecz()
   double deadbandz = Constants.deadbandz;
   if(Math.abs(z)<deadbandz) {return 0.0;}
   else {return Math.copySign(Math.pow(Math.abs(this.safety()*z),1.5),-1*z);}
-  // this takes an arbitrary power of the magnitude of z, and assigns it negative the sign of z such that -z coresponds to rotating counterclockwise, the direction of positive angle.
+  // this takes an arbitrary power of the magnitude of z, and assigns it negative the sign of z such that pushing left on the joystick coresponds to rotating counterclockwise, the direction of positive angle.
   // powers of z^x such that x>=1 have z=0 map to 0 and z=1 map to one, where z is small the function grows slowly and where z is close to 1 it grows faster, so optimizes for precision for small angles.
 }
 
-public double[][] unitcrossdefault()
+public double[][] unitcrosscalc() //creates a set of counterclockwise perpendicular vectors scaled down to unit length for rotation component of motion using default wheelplacements
 {
-  double[][] unitcrossholder = wheelplacementsdefault;
-  for(int i=0;i<this.wheelplacementsdefault.length;i++)
+  double[][] unitcrossholder = this.wheelplacements();
+  for(int i=0;i<unitcrossholder.length;i++)
   {
-    double length = Math.hypot(this.wheelplacementsdefault[i][1],this.wheelplacementsdefault[i][0]);
-    unitcrossholder[i] = new double[] {this.wheelplacementsdefault[i][1]/length,this.wheelplacementsdefault[i][0]/length};
+    double length = Math.hypot(-1*unitcrossholder[i][1],unitcrossholder[i][0]);
+    unitcrossholder[i] = new double[] {-1*this.wheelplacementsdefault[i][1]/length,this.wheelplacementsdefault[i][0]/length};
   }
   return unitcrossholder;
 }
 
-public double[][] wheelplacements()
+public double[][] wheelplacements() //Returns the wheel placement settup that is currently active
 {
   if(this.defaultpointofrotation){return this.wheelplacementsdefault;}
-  else{return this.wheelplacementsdefault;} // Here is where you make a different point of rotation work part 1
+  else{return this.wheelplacementsalternate;}
 }
 
-public double[][] unitcross()
+public double[][] unitcross() //Returns the unit cross vectors for the setup that is currently active
 {
   if(this.defaultpointofrotation){return this.unitcrossdefault;}
-  else{return this.unitcrossdefault;} // Here is where you make a different point of rotation work part 2
+  else{return this.unitcrosscalc();} 
 }
 
-public double[] wheeldistancesdefault()
+public double[] wheeldistancescalc() //Returns how fare each wheel is from the center of rotation
 {
   double[] holder = new double[this.wheelplacements().length];
   for(int i=0;i<this.wheelplacements().length;i++)
@@ -205,13 +210,13 @@ public double[] wheeldistancesdefault()
   return holder;
 }
 
-public double[] wheeldistances()
+public double[] wheeldistances() //Returns a list of the wheel distances from the point of rotation currently active
 {
   if(this.defaultpointofrotation){return this.wheeldistancesdefault;}
-  else{return this.wheeldistancesdefault;} // Here is where you make a different point of rotation work part 3
+  else{return this.wheeldistancescalc();}
 }
 
-public double[] wheelsfromcenter()
+public double[] wheelsfromcenter() //Returns how far each wheel is from the center as a proportion of how far the furthest is
 {
   double max = this.wheeldistances()[0];
   for(int i=1;i<this.wheeldistances().length;i++)
@@ -226,38 +231,38 @@ public double[] wheelsfromcenter()
   return holder;
 }
 
-public double xylength()
+public double xylength() //Returns the magnitude of the xy joystick
 {
   double[] holder = this.joy2vecxy();
   return Math.hypot(holder[0], holder[1]);
 }
 
-public double normalize()
+public double normalize() //Returns the total magnitude of all inputs
 {
-  return this.joy2vecz()+this.xylength();
+  return Math.abs(this.joy2vecz())+this.xylength();
 }
 
-public double maxduetospin()
+public double maxduetospin() //Returns a signed proportion of total input magnitude that is used for rotation
 {
   return this.joy2vecz()/this.normalize();
 }
 
-public double maxduetovel()
+public double maxduetovel() //Returns a proportion of total input magnitude that is used for regular movement
 {
   return this.xylength()/this.normalize();
 }
 
-public double[] times(double[] pair,double solo)
+public double[] times(double[] pair,double solo) //Quick tool for scalar multiplication of vectors
 {
   return new double[] {pair[0]*solo,pair[1]*solo};
 }
 
-public double[][] rottovectors()
+public double[][] rottovectors() //Returns a set of vectors indicating where the rotation component of movement would vector each wheel to without regard for the gyro
 {
   double maxduetospin = this.maxduetospin();
-  double[][] unitcross = unitcross();
+  double[][] unitcross = this.unitcross();
   double[] wheelsfromcenter = this.wheelsfromcenter();
-  double[][] holder = wheelplacements();
+  double[][] holder = this.wheelplacements();
   for(int i=0;i<unitcross.length;i++)
   {
     holder[i] = this.times(unitcross[i],wheelsfromcenter[i]*maxduetospin);
@@ -265,23 +270,24 @@ public double[][] rottovectors()
   return holder;
 }
 
-public double[][] added()
+public double[][] added() //Returns a set of vectors indicating the combined rotation and linear motion that each wheel should be vectored to without regard for the gyro
 {
   double maxduetovel = this.maxduetovel();
+  double[] joy2vecxy = this.joy2vecxy();
   double[][] rottovectors = this.rottovectors();
   double[][] holder = rottovectors;
   for(int i=0;i<rottovectors.length;i++)
   {
-    holder[i] = new double[] {rottovectors[i][0]+maxduetovel,rottovectors[i][1]};
+    holder[i] = new double[] {rottovectors[i][0]+maxduetovel*joy2vecxy[0],rottovectors[i][1]+maxduetovel*joy2vecxy[1]};
   }
   return holder;
 }
 
-public double[][] wheelheadings()
+public double[][] wheelheadings() //Returns a set of vectors that each wheel should be vecotred to with regard to the gyro.
 {
   double[][] rotmatrix = this.rotmatrix();
   double[][] added = this.added();
-  // alright, I am gonna hardcode this section, but what I am hardcoding is just the dot product aka matrix multiplication of [rotmatrix] . Transpose([added]) transposed again.
+  // alright, I am gonna hardcode this section, but what I am hardcoding is just matrix transpose operations and dot product of matricies Transpose(Dot([rotmatrix],Transpose([added])))
   // I couldn't find a library that I was happy with using.
   // Just think of it as a coordinate system adjustment(rotation in this case) so each vector gets rotated but we only have to do addition and multiplication (in a very specific way) to get the result.
   double a = rotmatrix[0][0];
@@ -300,32 +306,34 @@ public double[][] wheelheadings()
   return holder;
 }
 
-public void drivebyjoystick()
+public void drivebyjoystick() //The main function to be called. Sets each individual swerve wheel setup to do its thing.
 {
   double[][] wheelheadings = this.wheelheadings();
   swervemodule(wheelheadings[0], m_driveMotorLF, m_steerMotorLF, m_steerEncoderLF);
   swervemodule(wheelheadings[1], m_driveMotorLB, m_steerMotorLB, m_steerEncoderLB);
   swervemodule(wheelheadings[2], m_driveMotorRF, m_steerMotorRF, m_steerEncoderRF);
   swervemodule(wheelheadings[3], m_driveMotorRB, m_steerMotorRB, m_steerEncoderRB);
+  return;
 }
 
-public void swervemodule(double[] input, WPI_TalonSRX drive, SpeedController steer, AnalogInput encoder)
+public void swervemodule(double[] input, WPI_TalonSRX drive, SpeedController steer, AnalogInput encoder) //Does angle math and sets steering and drive motors
 {
   double volt = encoder.getVoltage();
-  double currentangle = volt/5*Math.PI*2; 
+  double currentangle = volt/5*pi*2; 
   // Encoders should read 0 when all wheels are facing perfectly right, and should be PI/2 when perfectly foreward. 
   // If not, we need to make adjustments so their offset from that is taken care of.
   double magnitude = Math.hypot(input[0], input[1]);
   double dir = Math.atan2(input[1], input[0]);
-  if (dir<0.0){dir=Math.PI*2 + dir;}
+  if (dir<0.0){dir=pi*2 + dir;}
 // a mod b in its true math form is ((a % b) + b) % b in java.
   double a = dir-currentangle;
-  double b = Math.PI*2;
+  double b = pi*2;
   double amodb = ((a % b) + b) % b;
-  if(amodb<=Math.PI/2 || amodb>=Math.PI*3/2 ){steer.set(a/(Math.PI/2));drive.set(magnitude);}
-  if(amodb<Math.PI*3/2 && amodb>Math.PI/2){steer.set((a-Math.PI)/(Math.PI/2));drive.set(-magnitude);}
+  if(amodb<=pi/2 || amodb>=pi*3/2 ){steer.set(a/(pi/2));drive.set(magnitude);}
+  if(amodb<pi*3/2 && amodb>pi/2){steer.set((a-pi)/(pi/2));drive.set(-magnitude);}
   // If the current angle is less than or equal to 90degrees from the desired angle, steer toward the desired angle proportionally to how far off you are, and set the drive power to be foreward.
   // If the current angle is between 90 and 180degrees from the desired angle, treat it as if you were the antipode of the current angle and steer toward that proportionally to how far from there you are, and set the drive power to be backward.
+  return;
 }
 
 // public void neutralBrake() {
