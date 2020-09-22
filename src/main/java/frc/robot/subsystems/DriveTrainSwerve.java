@@ -61,7 +61,7 @@ public class DriveTrainSwerve extends SubsystemBase {
   private final double[][] wheelplacementsalternate = {{-11,11},{-11,-11},{11,11},{11,-11}};
   private final double[][] unitcrossdefault = unitcrosscalc();
   private final double[] wheeldistancesdefault = wheeldistancescalc();
-  public boolean defaultpointofrotation=true;
+  public boolean defaultpointofrotation=true; // Note: Never set this to false the first time it is run unless you want bad default values
   private ADIS16470_IMU gyro;
   public double leftYAxis;
   public double leftXAxis;
