@@ -29,12 +29,13 @@ import edu.wpi.first.wpilibj2.command.Command;
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
-  private DriveTrainSwerve m_DriveTrainSwerve;
+  public ADIS16470_IMU m_gyro;
+  public DriveTrainSwerve m_DriveTrainSwerve;
 
-  private ExampleCommand m_autoCommand = new ExampleCommand(m_exampleSubsystem);
+  //private ExampleCommand m_autoCommand = new ExampleCommand(m_exampleSubsystem);
   private Swervedrive m_swervecommand = new Swervedrive(m_DriveTrainSwerve);
 
-  private ADIS16470_IMU m_gyro;
+  
   public static XboxController driveController = new XboxController(Constants.USB_driveController);
 
   
@@ -84,6 +85,6 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An ExampleCommand will run in autonomous
-    return m_autoCommand;
+    return m_swervecommand;
   }
 }
