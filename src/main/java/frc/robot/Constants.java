@@ -18,18 +18,18 @@ package frc.robot;
  */
 public final class Constants {
 
-	public static final int CANID_steerMotorLB = 0;
-	public static final int CANID_driveMotorLF = 0;
-	public static final int CANID_driveMotorLB = 0;
-	public static final int CANID_steerMotorLF = 0;
-	public static final int CANID_steerMotorRF = 0;
-	public static final int CANID_driveMotorRF = 0;
-	public static final int CANID_steerMotorRB = 0;
-	public static final int CANID_driveMotorRB = 0;
+	public static final int CANID_steerMotorLB = 4;
+	public static final int CANID_driveMotorLF = 5;
+	public static final int CANID_driveMotorLB = 6;
+	public static final int CANID_steerMotorLF = 7;
+	public static final int CANID_steerMotorRF = 8;
+	public static final int CANID_driveMotorRF = 9;
+	public static final int CANID_steerMotorRB = 10;
+	public static final int CANID_driveMotorRB = 11;
 	public static final int CANID_steerEncoderLF = 0;
-	public static final int CANID_steerEncoderLB = 0;
-	public static final int CANID_steerEncoderRF = 0;
-	public static final int CANID_steerEncoderRB = 0;
+	public static final int CANID_steerEncoderLB = 1;
+	public static final int CANID_steerEncoderRF = 2;
+	public static final int CANID_steerEncoderRB = 3;
 	public static final double safetyoff = 1;
 	public static final double safetyon = .5;
 	public static final double deadbandxy = 0.05;
